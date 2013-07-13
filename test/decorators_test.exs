@@ -12,17 +12,16 @@ defmodule TestModule do
   end
 
   decorate d2,
-  (def f2(a), do: a)
+  (def f2(), do: 1)
 
 end
-
 
 defmodule DecoratorsTest do
   use ExUnit.Case
 
   test "simple" do
     assert 1 == TestModule.f1(1)
-    assert 2 == TestModule.f2(1)
+    assert 2 == TestModule.f2()
   end
 
 end
