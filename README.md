@@ -1,3 +1,5 @@
 # Decorators
 
-** TODO: Add description **
+Work in progress.
+
+Actual code in `develop` branch
