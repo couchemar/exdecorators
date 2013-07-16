@@ -40,5 +40,4 @@ defmodule DecoratorsTest do
     assert 2 == TestModule.f2(1)
     assert 5 == TestModule.f3(1, 2)
   end
-
 end

@@ -66,17 +66,18 @@ defmodule Decorators do
     end
   end
 
-  defmacro decorate(decorator, func_and_body) do
-    {:def, _ctx, [{func_name, _fun_ctx, args}, body]} = func_and_body
-    mark_decorated(func_name, args, body, decorator)
+  defmacro decorate({decor_name, _, _},
+                    {:def, _ctx, [{func_name, _fun_ctx, args}, body]}) do
+    mark_decorated(func_name, args, body, decor_name)
   end
 
-  defmacro decorate(decorator, definition, body) do
-    {:def, _ctx, [{func_name, _fun_ctx, args}]} = definition
-    mark_decorated(func_name, args, body, decorator)
+  defmacro decorate({decor_name, _, _},
+                    {:def, _ctx, [{func_name, _fun_ctx, args}]},
+                    body) do
+    mark_decorated(func_name, args, body, decor_name)
   end
 
-  defp mark_decorated(func_name, args, body, {decor_name, _, _}) do
+  defp mark_decorated(func_name, args, body, decor_name) do
     function_decorators = binary_to_atom("decorators_for_#{func_name}")
     quote do
       Module.put_attribute __MODULE__, :decorated, {unquote(func_name), unquote(Macro.escape args), unquote(Macro.escape body)}
