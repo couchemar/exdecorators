@@ -22,11 +22,7 @@ defmodule Decorators do
     end
   end
 
-  def make_decoration(module, {f_name, _, _}=f) do
-    make_decoration(module, f, Module.get_attribute(module, binary_to_atom("decorators_for_#{f_name}")))
-  end
-
-  def make_decoration(module, {f_name, f_args, f_body}, decor_name) do
+  def make_decoration(module, {f_name, f_args, f_body, decor_name}) do
     # Decorated function
     new_name = binary_to_atom("_#{decor_name}_DECORATED_#{f_name}")
     decorated_function = quote do
@@ -78,10 +74,14 @@ defmodule Decorators do
   end
 
   defp mark_decorated(func_name, args, body, decor_name) do
-    function_decorators = binary_to_atom("decorators_for_#{func_name}")
     quote do
-      Module.put_attribute __MODULE__, :decorated, {unquote(func_name), unquote(Macro.escape args), unquote(Macro.escape body)}
-      Module.put_attribute __MODULE__, unquote(function_decorators), unquote(decor_name)
+      Module.put_attribute __MODULE__, :decorated, {unquote(func_name), unquote(Macro.escape args), unquote(Macro.escape body), unquote(decor_name)}
     end
   end
 end
+
+
+
+
+
+
