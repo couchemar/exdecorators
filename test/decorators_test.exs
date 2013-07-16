@@ -30,6 +30,20 @@ defmodule TestModule do
   def f3() do
     2
   end
+
+  defdecorator d4(decorated), args: [a] do
+    1 + decorated.call([a])
+  end
+
+  defdecorator d5(decorated), args: [a] do
+    2 + decorated.call([a])
+  end
+
+  decorate [d4, d5],
+  def f4(a) do
+    a
+  end
+
 end
 
 defmodule DecoratorsTest do
@@ -39,5 +53,9 @@ defmodule DecoratorsTest do
     assert 1 == TestModule.f1(1)
     assert 2 == TestModule.f2(1)
     assert 5 == TestModule.f3(1, 2)
+  end
+
+  test "multiple" do
+    assert 4 == TestModule.f4(1)
   end
 end

@@ -22,7 +22,20 @@ defmodule Decorators do
     end
   end
 
-  def make_decoration(module, {f_name, f_args, f_body, decor_name}) do
+  def decorate_function(module, f_name, d_name, new_name) do
+    decorators_list = Module.get_attribute(module, :decorators)
+    d_args = decorators_list[d_name]
+    quote do
+      def unquote(f_name)(unquote_splicing(d_args)) do
+        decorated = Decorated.new(module: unquote(module),
+                                  decorated: unquote(new_name),
+                                  origin: unquote(f_name))
+        unquote(module).unquote(d_name)(decorated, unquote_splicing(d_args))
+      end
+    end
+  end
+
+  def make_decoration(module, {f_name, f_args, f_body, [decor_name|_]}) do
     # Decorated function
     new_name = binary_to_atom("_#{decor_name}_DECORATED_#{f_name}")
     decorated_function = quote do
@@ -30,16 +43,7 @@ defmodule Decorators do
     end
 
     # Decorator
-    decorators_list = Module.get_attribute(module, :decorators)
-    d_args = decorators_list[decor_name]
-    decorator = quote do
-      def unquote(f_name)(unquote_splicing(d_args)) do
-        decorated = Decorated.new(module: unquote(module),
-                                  decorated: unquote(new_name),
-                                  origin: unquote(f_name))
-        unquote(module).unquote(decor_name)(decorated, unquote_splicing(d_args))
-      end
-    end
+    decorator = decorate_function(module, f_name, decor_name, new_name)
     [decorated_function, decorator]
   end
 
@@ -64,18 +68,25 @@ defmodule Decorators do
 
   defmacro decorate({decor_name, _, _},
                     {:def, _ctx, [{func_name, _fun_ctx, args}, body]}) do
-    mark_decorated(func_name, args, body, decor_name)
+    mark_decorated(func_name, args, body, [decor_name])
   end
 
   defmacro decorate({decor_name, _, _},
                     {:def, _ctx, [{func_name, _fun_ctx, args}]},
                     body) do
-    mark_decorated(func_name, args, body, decor_name)
+    mark_decorated(func_name, args, body, [decor_name])
   end
 
-  defp mark_decorated(func_name, args, body, decor_name) do
+  defmacro decorate(decorators,
+                    {:def, _ctx, [{func_name, _fun_ctx, args}]},
+                    body) when is_list(decorators)do
+    decor_names = lc {decor_name, _, _} inlist decorators, do: decor_name
+    mark_decorated(func_name, args, body, decor_names)
+  end
+
+  defp mark_decorated(func_name, args, body, decor_names) do
     quote do
-      Module.put_attribute __MODULE__, :decorated, {unquote(func_name), unquote(Macro.escape args), unquote(Macro.escape body), unquote(decor_name)}
+      Module.put_attribute __MODULE__, :decorated, {unquote(func_name), unquote(Macro.escape args), unquote(Macro.escape body), unquote(decor_names)}
     end
   end
 end
