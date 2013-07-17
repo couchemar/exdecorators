@@ -73,10 +73,16 @@ defmodule Decorators do
 
   defmacro __before_compile__(env) do
     m = env.module
-    decorated = Module.get_attribute(env.module, :decorated)
-    lc f inlist decorated do
+    decorated = Module.get_attribute(m, :decorated)
+    decorated = lc f inlist decorated do
       make_decoration(m, f)
     end
+
+    # No need more @decorated @decorators
+    Module.delete_attribute m, :decorators
+    Module.delete_attribute m, :decorated
+
+    decorated
   end
 
   defmacro defdecorator(decorator, options, body) do
