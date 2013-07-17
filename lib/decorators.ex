@@ -35,16 +35,40 @@ defmodule Decorators do
     end
   end
 
-  def make_decoration(module, {f_name, f_args, f_body, [decor_name|_]}) do
+  def decorate_decorators(module, decorated_name, decorators, last_decor_name) when length(decorators)>0 do
+    decorate_decorators(module, decorated_name, decorators, [], last_decor_name)
+  end
+
+  def decorate_decorators(_module, decorated_name, [], last_decor_name) do
+    {decorated_name, last_decor_name, []}
+  end
+
+  def decorate_decorators(module, decorated_name, [decor_name|decorators], acc, last_decor_name) do
+    new_name = binary_to_atom("_#{decor_name}_DECORATED_#{decorated_name}")
+
+    decorated = decorate_function(module, new_name, last_decor_name, decorated_name)
+    decorate_decorators(module, new_name, decorators, [decorated|acc], decor_name)
+  end
+
+  def decorate_decorators(_module, decorated_name, [], acc, last_decor_name) do
+    {decorated_name, last_decor_name, acc}
+  end
+
+  def make_decoration(module, {f_name, f_args, f_body, [decor_name|decorators]}) do
     # Decorated function
     new_name = binary_to_atom("_#{decor_name}_DECORATED_#{f_name}")
     decorated_function = quote do
       def unquote(new_name)(unquote_splicing(f_args)), unquote(f_body)
     end
 
-    # Decorator
-    decorator = decorate_function(module, f_name, decor_name, new_name)
-    [decorated_function, decorator]
+    # Decorators
+    {new_name, last_d_name, decorators} = decorate_decorators(module, new_name,
+                                                              decorators, decor_name)
+
+    last_decorator = decorate_function(module, f_name, last_d_name, new_name)
+    decorators = [last_decorator|decorators]
+
+    [decorated_function|decorators]
   end
 
   defmacro __before_compile__(env) do
