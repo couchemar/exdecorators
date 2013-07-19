@@ -1,10 +1,10 @@
-defmodule Decorators.Mixfile do
+defmodule Exdecorators.Mixfile do
   use Mix.Project
 
   def project do
-    [ app: :decorators,
+    [ app: :exdecorators,
       version: "0.0.1",
-      elixir: "~> 0.9.4-dev",
+      elixir: "~> 0.10.1-dev",
       deps: deps ]
   end
 
