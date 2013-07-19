@@ -1,7 +1,6 @@
 Code.require_file "test_helper.exs", __DIR__
 
 defmodule TestModule do
-  import Decorators
   use Decorators
 
   defdecorator d1(decorated), args: [a] do
