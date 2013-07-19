@@ -1,5 +1,3 @@
 # Decorators
 
-Work in progress.
-
-Actual code in `develop` branch
+Check out tests for using.
